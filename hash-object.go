@@ -13,16 +13,37 @@ import (
 
 func HashObject(t string, w bool, args []string) {
 	path := args[len(args)-1]
-
-	context := getContent(path)
-	header := fmt.Sprintf("%s %d\u0000", t, len(context))
-	data := append([]byte(header), context...)
-
-	id := sha1.Sum(data)
-	idStr := fmt.Sprintf("%x", id)
+	idStr := getSha1Str(path, t)
 	fmt.Printf("%s\n", idStr)
 
-	//write into object database
+	data := getData(path, t)
+	writeObject(idStr, data)
+}
+
+func getSha1Str(path string, t string) string {
+	data := getData(path, t)
+	id := sha1.Sum(data)
+	return fmt.Sprintf("%x", id)
+}
+
+//assemble according to the data format of the object
+func getData(path string, t string) []byte {
+	content := getContent(path)
+	header := fmt.Sprintf("%s %d\u0000", t, len(content))
+	data := append([]byte(header), content...)
+	return data
+}
+
+func getContent(path string) []byte {
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return file
+}
+
+//compress the object and write into the database
+func writeObject(idStr string, data []byte) {
 	prefix := idStr[:2]
 	postfix := idStr[2:]
 
@@ -39,18 +60,14 @@ func HashObject(t string, w bool, args []string) {
 	}
 
 	//compress with zlib
-	var b bytes.Buffer
-	writer := zlib.NewWriter(&b)
-	writer.Write(data)
-	writer.Close()
-
-	file.Write(b.Bytes())
+	compressedData := compress(data)
+	file.Write(compressedData)
 }
 
-func getContent(path string) []byte {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return file
+func compress(raw []byte) []byte {
+	var b bytes.Buffer
+	writer := zlib.NewWriter(&b)
+	writer.Write(raw)
+	writer.Close()
+	return b.Bytes()
 }

@@ -11,7 +11,7 @@ function jun(){
   $jun $@
 }
 
-testdir="../git-test"
+testdir="git-test"
 if [ -e "$testdir" ]; then
     rm -rf $testdir
 fi
@@ -38,6 +38,7 @@ h2=$(<hash2)
 jun cat-file -p $h1 > fileContent1
 git cat-file -p $h2 > fileContent2
 cmp fileContent1 fileContent2
+
 jun cat-file -t $h1 > fileType1
 git cat-file -t $h2 > fileType2
 cmp fileType1 fileType2
@@ -45,3 +46,27 @@ jun cat-file -s $h1 > fileSize1
 git cat-file -s $h2 > fileSize2
 cmp fileSize1 fileSize2
 echo -e
+
+print "test git update-index --add, git ls-files --stage"
+cd junDir
+jun update-index --add file.txt
+jun ls-files --stage > ../stage1
+cd ../gitDir
+git update-index --add file.txt
+git ls-files --stage > ../stage2
+cd ..
+cmp stage1 stage2
+echo -e
+
+print "test git write-tree"
+cd junDir
+mkdir dir
+echo 123 > dir/file1
+echo abc > dir/file2
+jun update-index --add dir/file1
+jun update-index --add dir/file2
+jun write-tree > treeobj1
+#mkdir ../../test-data
+#jun cat-file -p $(<treeobj1) > ../../test-data/test-write-tree-data.txt
+jun cat-file -p $(<treeobj1) > treeobj1Content
+cmp treeobj1Content ../../test-data/test-write-tree-data.txt

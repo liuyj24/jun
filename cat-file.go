@@ -33,15 +33,7 @@ func CatFile(p bool, t bool, s bool, args []string) {
 	}
 
 	//uncompress
-	reader := bytes.NewReader(data)
-	r, err := zlib.NewReader(reader)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var out bytes.Buffer
-	io.Copy(&out, r)
-
-	raw := out.Bytes()
+	raw := unCompressData(data)
 	i := bytes.IndexByte(raw, ' ')
 	j := bytes.IndexByte(raw, '\u0000')
 
@@ -58,4 +50,15 @@ func CatFile(p bool, t bool, s bool, args []string) {
 		//maybe there is a \n at the last of raw, so we don't need to add \n ? (+_+)...
 		fmt.Printf("%s", objectContent)
 	}
+}
+
+func unCompressData(data []byte) []byte {
+	reader := bytes.NewReader(data)
+	r, err := zlib.NewReader(reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var out bytes.Buffer
+	io.Copy(&out, r)
+	return out.Bytes()
 }

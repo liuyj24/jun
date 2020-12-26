@@ -27,5 +27,18 @@ func main() {
 		s := flag.Bool("s", false, "show object size")
 		flag.Parse()
 		CatFile(*p, *t, *s, flag.Args())
+
+	case "update-index":
+		a := flag.Bool("add", false, "add file content to the index")
+		flag.Parse()
+		UpdateIndex(*a, flag.Args())
+
+	case "ls-files":
+		s := flag.Bool("stage", false, "Show staged contents' mode bits, object name and stage number")
+		flag.Parse()
+		LsFiles(*s)
+
+	case "write-tree":
+		WriteTree()
 	}
 }
