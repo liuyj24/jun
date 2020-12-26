@@ -5,7 +5,6 @@ import (
 	"compress/zlib"
 	"crypto/sha1"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,36 +12,26 @@ import (
 
 func HashObject(t string, w bool, args []string) {
 	path := args[len(args)-1]
-	idStr := getSha1Str(path, t)
-	fmt.Printf("%s\n", idStr)
 
-	data := getData(path, t)
-	writeObject(idStr, data)
+	var blob BlobOjbect
+	blob.Path = path
+
+	objSha1, data := getSha1AndRawData(&blob)
+	blob.Sha1 = objSha1
+	fmt.Printf("%s\n", blob.Sha1)
+
+	writeObject(objSha1, data)
 }
 
-func getSha1Str(path string, t string) string {
-	data := getData(path, t)
-	id := sha1.Sum(data)
-	return fmt.Sprintf("%x", id)
-}
-
-//assemble according to the data format of the object
-func getData(path string, t string) []byte {
-	content := getContent(path)
-	header := fmt.Sprintf("%s %d\u0000", t, len(content))
+func getSha1AndRawData(o Object) (string, []byte) {
+	content := o.getContent()
+	header := fmt.Sprintf("%s %d\u0000", o.getType(), len(content))
 	data := append([]byte(header), content...)
-	return data
+	s := fmt.Sprintf("%x", sha1.Sum(data))
+	return s, data
 }
 
-func getContent(path string) []byte {
-	file, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return file
-}
-
-//compress the object and write into the database
+// compress the object and write into the database
 func writeObject(idStr string, data []byte) {
 	prefix := idStr[:2]
 	postfix := idStr[2:]

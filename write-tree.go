@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha1"
 	"fmt"
 	"strings"
 )
@@ -10,7 +8,7 @@ import (
 func WriteTree() {
 	entryList := getEntryListFromIndex()
 	treeObj := getTreeObject(entryList.List)
-	fmt.Printf("%s\n", treeObj.sha1)
+	fmt.Printf("%s\n", treeObj.Sha1)
 }
 
 func getTreeObject(list []Entry) *TreeObject {
@@ -20,7 +18,7 @@ func getTreeObject(list []Entry) *TreeObject {
 	m := make(map[string][]Entry)
 	var blobList []Entry
 
-	// sort out blobs by their path
+	// sort out blobs by their Path
 	for _, entry := range list {
 
 		//os.PathSeparator may be better here, but I am on windows and test in shell, so "/" make sense here
@@ -51,21 +49,14 @@ func getTreeObject(list []Entry) *TreeObject {
 		newEntry.Path = k
 		newEntry.Mode = "040000"
 		newEntry.Type = "tree"
-		newEntry.Sha1 = childTreeObj.sha1
+		newEntry.Sha1 = childTreeObj.Sha1
 		treeObject.List = append(treeObject.List, newEntry)
 	}
 
 	//write tree object to object database
-	var bytes bytes.Buffer
-	for _, entry := range treeObject.List {
-		bytes.WriteString(fmt.Sprintf("%s %s %s	%s\n", entry.Mode, entry.Type, entry.Sha1, entry.Path))
-	}
-	content := bytes.Bytes()
-	header := fmt.Sprintf("%s %d\u0000", "tree", len(content))
-	data := append([]byte(header), content...)
-	objSha1 := sha1.Sum(data)
+	objSha1, data := getSha1AndRawData(&treeObject)
+	treeObject.Sha1 = objSha1
 
-	treeObject.sha1 = fmt.Sprintf("%x", objSha1)
-	writeObject(treeObject.sha1, data)
+	writeObject(objSha1, data)
 	return &treeObject
 }

@@ -17,9 +17,11 @@ func UpdateIndex(a bool, args []string) {
 	path := args[len(args)-1]
 
 	//create an object for the file content if the object is not exist
-	sha1 := getSha1Str(path, "blob")
+	var blob BlobOjbect
+	blob.Path = path
+	sha1, data := getSha1AndRawData(&blob)
 	if exist := isObjectExist(sha1); !exist {
-		writeObject(sha1, getData(path, "blob"))
+		writeObject(sha1, data)
 	}
 
 	//create file index
