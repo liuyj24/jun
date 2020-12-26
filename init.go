@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ func Init(path string) {
 		return
 	}
 
-	//confirm the path doesn't exist or the dir is empty
+	//confirm the Path doesn't exist or the dir is empty
 	if stat, err := os.Stat(path); os.IsNotExist(err) {
 		err := os.Mkdir(path, FILE_MODE)
 		if err != nil {
@@ -51,11 +52,14 @@ func Init(path string) {
 	//create dir: hooks, info, object, refs
 	os.Mkdir(filepath.Join(gitPath, "hooks"), FILE_MODE)
 	os.Mkdir(filepath.Join(gitPath, "info"), FILE_MODE)
-	os.Mkdir(filepath.Join(gitPath, "object"), FILE_MODE)
+	os.Mkdir(filepath.Join(gitPath, "objects"), FILE_MODE)
 	os.Mkdir(filepath.Join(gitPath, "refs"), FILE_MODE)
 
 	//create dir tags and heads in refs
 	refsPath := filepath.Join(gitPath, "refs")
 	os.Mkdir(filepath.Join(refsPath, "tags"), FILE_MODE)
 	os.Mkdir(filepath.Join(refsPath, "heads"), FILE_MODE)
+
+	dir, _ := os.Getwd()
+	fmt.Printf("Initialized empty Git repository in :%s\n", filepath.Join(dir, gitPath))
 }

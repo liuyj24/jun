@@ -1,17 +1,31 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"os"
+)
 
 func main() {
-	//解析指令
-	flag.Parse()
-
-	//指令判断
-	var command = flag.Arg(0)
-	//args := flag.Args()[1:]
+	//confirm command
+	var command = os.Args[1]
+	os.Args = os.Args[1:] //for using flag, I have to do this... no more better idea now
 
 	switch command {
 	case "init":
-		Init(flag.Arg(1))
+		flag.Parse()
+		Init(flag.Arg(0))
+
+	case "hash-object":
+		w := flag.Bool("w", true, "write into object database")
+		t := flag.String("t", "blob", "object type")
+		flag.Parse()
+		HashObject(*t, *w, flag.Args())
+
+	case "cat-file":
+		p := flag.Bool("p", false, "print object content")
+		t := flag.Bool("t", false, "show object type")
+		s := flag.Bool("s", false, "show object size")
+		flag.Parse()
+		CatFile(*p, *t, *s, flag.Args())
 	}
 }
