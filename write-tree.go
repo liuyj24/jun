@@ -56,7 +56,7 @@ func getTreeObject(list []Entry) *TreeObject {
 	//write tree object to object database
 	objSha1, data := getSha1AndRawData(&treeObject)
 	treeObject.Sha1 = objSha1
-
 	writeObject(objSha1, data)
+
 	return &treeObject
 }

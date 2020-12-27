@@ -40,5 +40,17 @@ func main() {
 
 	case "write-tree":
 		WriteTree()
+
+	case "commit-tree":
+		treeObjSha1 := os.Args[1]
+		os.Args = os.Args[1:]
+		p := flag.String("p", "", "indicates the id of a parent commit object")
+		m := flag.String("m", "", "the commit log message")
+		flag.Parse()
+		CommitTree(treeObjSha1, *p, *m)
+
+	case "log":
+		commitObjSha1 := os.Args[1]
+		Log(commitObjSha1)
 	}
 }

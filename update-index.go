@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var indexPath = filepath.Join(".git", "index")
@@ -20,7 +21,7 @@ func UpdateIndex(a bool, args []string) {
 	var blob BlobOjbect
 	blob.Path = path
 	sha1, data := getSha1AndRawData(&blob)
-	if exist := isObjectExist(sha1); !exist {
+	if exist, _ := isObjectExist(sha1); !exist {
 		writeObject(sha1, data)
 	}
 
@@ -49,7 +50,7 @@ func UpdateIndex(a bool, args []string) {
 	writeEntryListToIndex(entryList)
 }
 
-func isObjectExist(sha1 string) bool {
+func isObjectExist(sha1 string) (bool, string) {
 	dir, err := ioutil.ReadDir(filepath.Join(".git", "objects"))
 	if err != nil {
 		log.Fatal(err)
@@ -57,11 +58,19 @@ func isObjectExist(sha1 string) bool {
 	prefix := sha1[:2]
 	//todo: binary search will be faster
 	for _, v := range dir {
-		if prefix == v.Name() {
-			return true
+		if v.Name() == prefix {
+			objectDir, err := ioutil.ReadDir(filepath.Join(".git", "objects", prefix))
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, o := range objectDir {
+				if strings.HasPrefix(o.Name(), sha1[2:]) {
+					return true, prefix + o.Name()
+				}
+			}
 		}
 	}
-	return false
+	return false, ""
 }
 
 func getEntryListFromIndex() *EntryList {

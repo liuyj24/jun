@@ -20,6 +20,7 @@ func HashObject(t string, w bool, args []string) {
 	blob.Sha1 = objSha1
 	fmt.Printf("%s\n", blob.Sha1)
 
+	//write into database
 	writeObject(objSha1, data)
 }
 

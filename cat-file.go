@@ -12,11 +12,22 @@ import (
 )
 
 func CatFile(p bool, t bool, s bool, args []string) {
+	if !p {
+		fmt.Printf("%s\n", getCatFileStr(p, t, s, args))
+	} else {
+		//maybe there is a \n at the last of raw, so we don't need to add \n ? (+_+)...
+		fmt.Printf("%s", getCatFileStr(p, t, s, args))
+	}
+}
+
+func getCatFileStr(p bool, t bool, s bool, args []string) string {
 	if !p && !t && !s {
 		log.Fatal("a -p or -t is needed!")
 	}
-	objectId := args[len(args)-1]
-	objectDir := filepath.Join(".git", "objects", objectId[:2])
+
+	//get data from database
+	objectSha1 := args[len(args)-1]
+	objectDir := filepath.Join(".git", "objects", objectSha1[:2])
 
 	dir, err := ioutil.ReadDir(objectDir)
 	if err != nil {
@@ -24,7 +35,7 @@ func CatFile(p bool, t bool, s bool, args []string) {
 	}
 	var data []byte
 	for _, file := range dir {
-		if strings.HasPrefix(file.Name(), objectId[2:]) {
+		if strings.HasPrefix(file.Name(), objectSha1[2:]) {
 			data, err = ioutil.ReadFile(filepath.Join(objectDir, file.Name()))
 			if err != nil {
 				log.Fatal(err)
@@ -39,17 +50,17 @@ func CatFile(p bool, t bool, s bool, args []string) {
 
 	if t {
 		objectType := raw[:i]
-		fmt.Printf("%s\n", objectType)
+		return string(objectType)
 
 	} else if s {
 		objectSize := raw[i+1 : j]
-		fmt.Printf("%s\n", objectSize)
+		return string(objectSize)
 
 	} else if p {
 		objectContent := raw[j+1:]
-		//maybe there is a \n at the last of raw, so we don't need to add \n ? (+_+)...
-		fmt.Printf("%s", objectContent)
+		return string(objectContent)
 	}
+	return ""
 }
 
 func unCompressData(data []byte) []byte {

@@ -6,6 +6,10 @@ import (
 )
 
 func LsFiles(s bool) {
+	if !s {
+		fmt.Printf("ls-files only support --stage now!")
+		return
+	}
 	if _, err := os.Stat(indexPath); os.IsNotExist(err) {
 		return
 	}
