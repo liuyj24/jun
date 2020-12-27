@@ -78,7 +78,6 @@ func (commit *CommitOjbect) getContent() []byte {
 	}
 	bytes.WriteString(fmt.Sprintf("author %s %s\n", commit.author, commit.date))
 	bytes.WriteString(fmt.Sprintf("committer %s %s\n", commit.committer, commit.date))
-	bytes.WriteString(fmt.Sprintf("\n"))
 	bytes.WriteString(fmt.Sprintf("%s\n", commit.message))
 	return bytes.Bytes()
 }
@@ -89,6 +88,7 @@ func (commit *CommitOjbect) getType() string {
 
 func (commit *CommitOjbect) parseCommitObj(b []byte) *CommitOjbect {
 	buf := bytes.NewBuffer(b)
+
 	line1, err := buf.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
@@ -132,11 +132,6 @@ func (commit *CommitOjbect) parseCommitObj(b []byte) *CommitOjbect {
 	}
 	s := strings.Split(line4, " ")
 	commit.committer = s[1]
-
-	_, err = buf.ReadString('\n')
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	line6, err := buf.ReadString('\n')
 	if err != nil {

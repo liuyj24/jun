@@ -73,11 +73,25 @@ cmp treeobjContent ../../test-data/test-write-tree-data.txt
 echo -e
 
 print "test commit-tree, log"
-jun commit-tree $(<treeobj1sha1) -m 'first commit' > commit1Sha1
+jun commit-tree $(<treeobj1sha1) -m "first commit" > commit1Sha1
 echo version2 > file.txt
 jun update-index --add file.txt
 jun write-tree > treeobj2sha1
-jun commit-tree $(<treeobj2sha1) -p $(<commit1Sha1) -m 'second commit' > commit2Sha1
+jun commit-tree $(<treeobj2sha1) -p $(<commit1Sha1) -m "second commit" > commit2Sha1
 jun log $(<commit2Sha1) > log
 echo -e show log :
 cat log
+echo -e
+
+print "test update-ref"
+jun update-ref refs/heads/master $(<commit2Sha1)
+jun log master
+
+print "test symbolic-ref"
+jun update-ref refs/heads/test $(<commit1Sha1)
+jun symbolic-ref HEAD refs/heads/test
+jun log
+
+print "test commit"
+jun commit -m 'test commit'
+jun log

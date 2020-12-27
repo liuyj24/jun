@@ -47,10 +47,20 @@ func main() {
 		p := flag.String("p", "", "indicates the id of a parent commit object")
 		m := flag.String("m", "", "the commit log message")
 		flag.Parse()
-		CommitTree(treeObjSha1, *p, *m)
+		CommitTree(treeObjSha1, *p, *m, flag.Args())
 
 	case "log":
-		commitObjSha1 := os.Args[1]
-		Log(commitObjSha1)
+		Log(os.Args)
+
+	case "update-ref":
+		UpdateRef(os.Args)
+
+	case "symbolic-ref":
+		Symbolic(os.Args)
+
+	case "commit":
+		m := flag.String("m", "", "commit message")
+		flag.Parse()
+		Commit(*m, flag.Args())
 	}
 }

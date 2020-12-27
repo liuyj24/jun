@@ -3,17 +3,18 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"path/filepath"
+	"strings"
 )
 
-func Log(objSha1 string) {
-	if objSha1 == "" || len(objSha1) < 1 {
-		fmt.Printf("Not a valid object name %s\n", objSha1)
-		return
-	}
-	exist, curObjsha1 := isObjectExist(objSha1)
-	if !exist {
-		fmt.Printf("Not a valid object name %s\n", objSha1)
-		return
+func Log(args []string) {
+	var curObjsha1 string
+	if len(args) <= 1 {
+		curObjsha1 = logWithoutArgs()
+	} else {
+		curObjsha1 = logWithArgs(args)
 	}
 	objStr := getCatFileStr(true, false, false, []string{curObjsha1})
 	var commitObj CommitOjbect
@@ -23,6 +24,35 @@ func Log(objSha1 string) {
 	var buf bytes.Buffer
 	printLog(&commitObj, &buf)
 	fmt.Printf("%s", buf.Bytes())
+}
+
+func logWithoutArgs() string {
+	//get objSha1 from HEAD
+	bytes, err := ioutil.ReadFile(filepath.Join(".git", "HEAD"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := string(bytes)
+	i := strings.Index(s, " ")
+	path := s[i+1:]
+
+	sha1bytes, err := ioutil.ReadFile(filepath.Join(".git", path))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return string(sha1bytes)
+}
+
+func logWithArgs(args []string) string {
+	argStr := args[1]
+	exist, curObjsha1 := isObjectExist(argStr)
+	if !exist {
+		exist, curObjsha1 = isRefExist(argStr)
+		if !exist {
+			log.Fatalf("Not a valid object name %s\n", argStr)
+		}
+	}
+	return curObjsha1
 }
 
 func printLog(commit *CommitOjbect, buf *bytes.Buffer) {

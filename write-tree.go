@@ -5,10 +5,11 @@ import (
 	"strings"
 )
 
-func WriteTree() {
+func WriteTree() *TreeObject {
 	entryList := getEntryListFromIndex()
 	treeObj := getTreeObject(entryList.List)
 	fmt.Printf("%s\n", treeObj.Sha1)
+	return treeObj
 }
 
 func getTreeObject(list []Entry) *TreeObject {
